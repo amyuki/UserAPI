@@ -2,7 +2,11 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
@@ -34,4 +38,39 @@ class Handler extends ExceptionHandler
     {
         //
     }
+
+    public function render($request, Throwable $e)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $code = $this->getExceptionHTTPStatusCode($e);
+            return response()->json(
+                $this->getJsonMessage($e, $code),
+                $code
+            );
+        }
+
+        return parent::render($request, $e);
+    }
+
+    protected function getExceptionHTTPStatusCode(Throwable $e)
+    {
+        if ($e instanceof HttpResponseException) {
+            return $e->getCode();
+        } elseif ($e instanceof AuthenticationException) {
+            return 401;
+        } elseif ($e instanceof ValidationException) {
+            return $e->status;
+        }
+        return 500;
+    }
+
+    protected function getJsonMessage(Throwable $e, int $code)
+    {
+        return [
+            'code' => $code,
+            'data' => [],
+            'message' => $e->getMessage()
+        ];
+    }
+
 }

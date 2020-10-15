@@ -72,5 +72,4 @@ class Handler extends ExceptionHandler
             'message' => $e->getMessage()
         ];
     }
-
 }

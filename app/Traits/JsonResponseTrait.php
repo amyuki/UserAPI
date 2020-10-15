@@ -3,7 +3,6 @@
 
 namespace App\Traits;
 
-
 trait JsonResponseTrait
 {
     protected function success($data = [], $status = 200)
